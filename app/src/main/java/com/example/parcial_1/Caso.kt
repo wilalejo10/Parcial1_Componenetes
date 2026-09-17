@@ -8,5 +8,7 @@ data class Caso(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val titulo: String,
-    val descripcion: String
+    val descripcion: String,
+    val fecha: String,
+    val estado: String = "Abierto"
 )

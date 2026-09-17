@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,16 +28,32 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Parcial_1Theme {
+
+                var casos by remember {
+                    mutableStateOf<List<Caso>>(emptyList())
+                }
+
                 CrearCasoScreen(
-                    onGuardarCaso = { titulo, descripcion ->
+                    casos = casos,
+
+                    onGuardarCaso = { titulo, descripcion, fecha, estado ->
 
                         lifecycleScope.launch {
+
                             val caso = Caso(
                                 titulo = titulo,
-                                descripcion = descripcion
+                                descripcion = descripcion,
+                                fecha = fecha,
+                                estado = estado
                             )
-
                             database.casoDao().insertarCaso(caso)
+                        }
+                    },
+
+                    onVerCasos = {
+
+                        lifecycleScope.launch {
+                            casos = database.casoDao().obtenerCasos()
                         }
                     }
                 )
@@ -46,7 +64,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CrearCasoScreen(
-    onGuardarCaso: (String, String) -> Unit
+    casos: List<Caso>,
+    onGuardarCaso: (String, String, String, String) -> Unit,
+    onVerCasos: () -> Unit
 ) {
 
     var titulo by remember {
@@ -55,6 +75,14 @@ fun CrearCasoScreen(
 
     var descripcion by remember {
         mutableStateOf("")
+    }
+
+    var fecha by remember {
+        mutableStateOf("")
+    }
+
+    var estado by remember {
+        mutableStateOf("Abierto")
     }
 
     Column(
@@ -86,15 +114,68 @@ fun CrearCasoScreen(
             }
         )
 
+        OutlinedTextField(
+            value = fecha,
+            onValueChange = {
+                fecha = it
+            },
+            label = {
+                Text("Fecha")
+            },
+            placeholder = {
+                Text("DD/MM/AAAA")
+            }
+        )
+
+        OutlinedTextField(
+            value = estado,
+            onValueChange = {
+                estado = it
+            },
+            label = {
+                Text("Estado")
+            }
+        )
+
         Button(
             onClick = {
-                onGuardarCaso(titulo, descripcion)
+                onGuardarCaso(
+                    titulo,
+                    descripcion,
+                    fecha,
+                    estado
+                )
 
                 titulo = ""
                 descripcion = ""
+                fecha = ""
+                estado = "Abierto"
             }
         ) {
             Text("Guardar caso")
+        }
+
+        Button(
+            onClick = {
+                onVerCasos()
+            }
+        ) {
+            Text("Ver casos")
+        }
+
+        LazyColumn {
+
+            items(casos) { caso ->
+
+                Column(
+                    modifier = Modifier.padding(vertical = 8.dp)
+                ) {
+                    Text("Título: ${caso.titulo}")
+                    Text("Descripción: ${caso.descripcion}")
+                    Text("Fecha: ${caso.fecha}")
+                    Text("Estado: ${caso.estado}")
+                }
+            }
         }
     }
 }
