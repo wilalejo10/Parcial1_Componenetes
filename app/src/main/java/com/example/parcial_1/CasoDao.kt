@@ -12,4 +12,7 @@ interface CasoDao {
 
     @Query("SELECT * FROM casos")
     suspend fun obtenerCasos(): List<Caso>
+
+    @Query("SELECT * FROM casos WHERE id = :id")
+    suspend fun obtenerCasoPorId(id: Int): Caso?
 }

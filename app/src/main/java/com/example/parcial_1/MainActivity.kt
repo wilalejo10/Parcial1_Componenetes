@@ -3,6 +3,7 @@ package com.example.parcial_1
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,8 +34,13 @@ class MainActivity : ComponentActivity() {
                     mutableStateOf<List<Caso>>(emptyList())
                 }
 
+                var casoSeleccionado by remember {
+                    mutableStateOf<Caso?>(null)
+                }
+
                 CrearCasoScreen(
                     casos = casos,
+                    casoSeleccionado = casoSeleccionado,
 
                     onGuardarCaso = { titulo, descripcion, fecha, estado ->
 
@@ -46,15 +52,35 @@ class MainActivity : ComponentActivity() {
                                 fecha = fecha,
                                 estado = estado
                             )
+
                             database.casoDao().insertarCaso(caso)
+
+                            casos = database.casoDao().obtenerCasos()
                         }
                     },
 
                     onVerCasos = {
 
                         lifecycleScope.launch {
+
                             casos = database.casoDao().obtenerCasos()
+
+                            casoSeleccionado = null
                         }
+                    },
+
+                    onSeleccionarCaso = { id ->
+
+                        lifecycleScope.launch {
+
+                            casoSeleccionado =
+                                database.casoDao().obtenerCasoPorId(id)
+                        }
+                    },
+
+                    onVolverLista = {
+
+                        casoSeleccionado = null
                     }
                 )
             }
@@ -65,8 +91,11 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CrearCasoScreen(
     casos: List<Caso>,
+    casoSeleccionado: Caso?,
     onGuardarCaso: (String, String, String, String) -> Unit,
-    onVerCasos: () -> Unit
+    onVerCasos: () -> Unit,
+    onSeleccionarCaso: (Int) -> Unit,
+    onVolverLista: () -> Unit
 ) {
 
     var titulo by remember {
@@ -139,6 +168,7 @@ fun CrearCasoScreen(
 
         Button(
             onClick = {
+
                 onGuardarCaso(
                     titulo,
                     descripcion,
@@ -163,17 +193,51 @@ fun CrearCasoScreen(
             Text("Ver casos")
         }
 
-        LazyColumn {
+        if (casoSeleccionado != null) {
 
-            items(casos) { caso ->
+            Text("Detalle del caso")
 
-                Column(
-                    modifier = Modifier.padding(vertical = 8.dp)
-                ) {
-                    Text("Título: ${caso.titulo}")
-                    Text("Descripción: ${caso.descripcion}")
-                    Text("Fecha: ${caso.fecha}")
-                    Text("Estado: ${caso.estado}")
+            Text("Título: ${casoSeleccionado.titulo}")
+
+            Text("Descripción: ${casoSeleccionado.descripcion}")
+
+            Text("Fecha: ${casoSeleccionado.fecha}")
+
+            Text("Estado: ${casoSeleccionado.estado}")
+
+            Button(
+                onClick = {
+                    onVolverLista()
+                }
+            ) {
+                Text("Volver a la lista")
+            }
+
+        } else {
+
+            if (casos.isEmpty()) {
+
+                Text("No hay casos registrados.")
+
+            } else {
+
+                LazyColumn {
+
+                    items(casos) { caso ->
+
+                        Column(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp)
+                                .clickable {
+                                    onSeleccionarCaso(caso.id)
+                                }
+                        ) {
+
+                            Text("ID: ${caso.id}")
+
+                            Text("Título: ${caso.titulo}")
+                        }
+                    }
                 }
             }
         }
