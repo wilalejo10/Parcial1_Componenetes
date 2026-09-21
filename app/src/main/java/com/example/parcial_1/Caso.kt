@@ -10,5 +10,6 @@ data class Caso(
     val titulo: String,
     val descripcion: String,
     val fecha: String,
-    val estado: String = "Abierto"
+    val estado: String = "Abierto",
+   val fechaCierre: String? = null
 )

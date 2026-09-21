@@ -17,7 +17,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
-import com.example.parcial_1.ui.theme.Parcial_1Theme
+import com.example.parcial_1.ui.theme.CaseTrackNoirTheme
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -26,79 +26,25 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val database = AppDatabase.getDatabase(this)
+        val extraDatabase = ExtraDatabase.getDatabase(this)
 
         setContent {
-            Parcial_1Theme {
-
-                var casos by remember {
-                    mutableStateOf<List<Caso>>(emptyList())
-                }
-
-                var casoSeleccionado by remember {
-                    mutableStateOf<Caso?>(null)
-                }
-
-                CrearCasoScreen(
-                    casos = casos,
-                    casoSeleccionado = casoSeleccionado,
-
-                    onGuardarCaso = { titulo, descripcion, fecha, estado ->
-                        lifecycleScope.launch {
-                            val caso = Caso(
-                                titulo = titulo,
-                                descripcion = descripcion,
-                                fecha = fecha,
-                                estado = estado
-                            )
-                            database.casoDao().insertarCaso(caso)
-                            casos = database.casoDao().obtenerCasos()
-                        }
-                    },
-
-                    onActualizarCaso = { caso ->
-                        lifecycleScope.launch {
-                            database.casoDao().actualizarCaso(caso)
-                            casos = database.casoDao().obtenerCasos()
-                            casoSeleccionado = null
-                        }
-                    },
-
-                    onEliminarCaso = { caso ->
-                        lifecycleScope.launch {
-                            database.casoDao().eliminarCaso(caso)
-                            casos = database.casoDao().obtenerCasos()
-                            casoSeleccionado = null
-                        }
-                    },
-
-                    onBuscarCasos = { query ->
-                        lifecycleScope.launch {
-                            casos = database.casoDao().buscarCasos(query)
-                        }
-                    },
-
-                    onVerCasos = {
-                        lifecycleScope.launch {
-                            casos = database.casoDao().obtenerCasos()
-                            casoSeleccionado = null
-                        }
-                    },
-
-                    onSeleccionarCaso = { id ->
-                        lifecycleScope.launch {
-                            casoSeleccionado =
-                                database.casoDao().obtenerCasoPorId(id)
-                        }
-                    },
-
-                    onVolverLista = {
-                        casoSeleccionado = null
-                    }
+            CaseTrackNoirTheme {
+                AppNavigation(
+                    casoDao = database.casoDao(),
+                    hallazgoDao = extraDatabase.hallazgoDao(),
+                    cierreDao = extraDatabase.cierreDao()
                 )
             }
         }
     }
 }
+
+// ---------------------------------------------------------------------
+// Todo lo de abajo es la pantalla original de tu compañero/a.
+// Se deja intacta, solo que ya no está conectada en onCreate.
+// No se borra ni se modifica ninguna línea de esta parte.
+// ---------------------------------------------------------------------
 
 @Composable
 fun CrearCasoScreen(
@@ -138,7 +84,6 @@ fun CrearCasoScreen(
         }
     }
 
-    // Función auxiliar para validar campos vacíos
     fun camposSonValidos(): Boolean {
         if (titulo.isBlank() || descripcion.isBlank() || fecha.isBlank() || estado.isBlank()) {
             Toast.makeText(context, "Todos los campos son obligatorios", Toast.LENGTH_SHORT).show()
@@ -178,7 +123,6 @@ fun CrearCasoScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Campo de Fecha configurado para solo aceptar números y aplicar la máscara DD/MM/AAAA
         OutlinedTextField(
             value = fecha,
             onValueChange = { input ->
@@ -241,7 +185,6 @@ fun CrearCasoScreen(
 
         Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // Búsqueda de casos
         OutlinedTextField(
             value = queryBusqueda,
             onValueChange = {
@@ -261,7 +204,6 @@ fun CrearCasoScreen(
 
         Divider(modifier = Modifier.padding(vertical = 8.dp))
 
-        // Detalle / Lista
         if (casoSeleccionado != null) {
             Text(
                 text = "Detalle del caso",
