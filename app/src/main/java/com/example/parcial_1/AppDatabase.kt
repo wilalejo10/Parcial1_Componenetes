@@ -8,13 +8,15 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 @Database(
-    entities = [Caso::class],
-    version = 2,
+    entities = [Caso::class, Hallazgo::class, Cierre::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun casoDao(): CasoDao
+    abstract fun hallazgoDao(): HallazgoDao
+    abstract fun cierreDao(): CierreDao
 
     companion object {
 
@@ -51,6 +53,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "casos_database"
                 )
                     .addMigrations(MIGRATION_1_2)
+                    .fallbackToDestructiveMigration()
                     .build()
 
                 INSTANCE = instance

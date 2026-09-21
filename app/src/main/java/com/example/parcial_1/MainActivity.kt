@@ -26,24 +26,19 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val database = AppDatabase.getDatabase(this)
-        val extraDatabase = ExtraDatabase.getDatabase(this)
 
         setContent {
             CaseTrackNoirTheme {
                 AppNavigation(
                     casoDao = database.casoDao(),
-                    hallazgoDao = extraDatabase.hallazgoDao(),
-                    cierreDao = extraDatabase.cierreDao()
+                    hallazgoDao = database.hallazgoDao(),
+                    cierreDao = database.cierreDao()
                 )
             }
         }
     }
 }
 
-// ---------------------------------------------------------------------
-// Todo lo de abajo es la pantalla original de tu compañero/a.
-// Se deja intacta, solo que ya no está conectada en onCreate.
-// No se borra ni se modifica ninguna línea de esta parte.
 // ---------------------------------------------------------------------
 
 @Composable

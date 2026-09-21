@@ -3,7 +3,7 @@ package com.example.parcial_1
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class CasoTest { // El nombre de la clase debe ser igual al del archivo (CasoTest)
+class CasoTest {
 
     @Test
     fun crearCaso_debeGuardarLosDatosCorrectamente() {
